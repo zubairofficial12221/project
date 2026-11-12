@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Users to Firebase</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 450px; margin: 40px auto; padding: 20px; background: #f4f4f9; }
+    .card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; }
+    input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    #status { margin-top: 15px; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Register User</h2>
+    <form id="userForm">
+      <div class="form-group">
+        <label for="userName">Name</label>
+        <input type="text" id="userName" placeholder="Enter name" required>
+      </div>
+      <div class="form-group">
+        <label for="regNumber">Registration Number</label>
+        <input type="text" id="regNumber" placeholder="Enter registration number" required>
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // Storing under /esp32/users.json keeps a clean list of multiple entries
+    const DATABASE_URL = "https://proto-cbb4e-default-rtdb.asia-southeast1.firebasedatabase.app/esp32/users.json";
+
+    document.getElementById("userForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const nameVal = document.getElementById("userName").value.trim();
+      const regVal = document.getElementById("regNumber").value.trim();
+      const statusEl = document.getElementById("status");
+
+      statusEl.style.color = "#555";
+      statusEl.textContent = "Adding user...";
+
+      try {
+        // POST creates a new unique entry every time instead of overwriting
+        const response = await fetch(DATABASE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: nameVal,
+            regNumber: regVal
+          })
+        });
+
+        if (!response.ok) throw new Error("HTTP Error " + response.status);
+
+        statusEl.style.color = "green";
+        statusEl.textContent = "Added " + nameVal + "!";
+        document.getElementById("userForm").reset();
+      } catch (error) {
+        statusEl.style.color = "red";
+        statusEl.textContent = "Failed: " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>
